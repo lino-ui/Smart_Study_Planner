@@ -4,8 +4,10 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Profile from './pages/dashboard/Profile';
+import Subjects from './pages/dashboard/Subjects';
+import SubjectDetail from './pages/dashboard/SubjectDetail';
 import { useAuthStore } from './store/authStore';
-import { LayoutDashboard, CalendarDays, BarChart3, UserCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, BarChart3, UserCircle, LogOut } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -21,6 +23,9 @@ function Layout({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 p-4 space-y-1">
           <Link to="/dashboard" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <LayoutDashboard className="h-5 w-5" /> Dashboard
+          </Link>
+          <Link to="/subjects" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <BookOpen className="h-5 w-5" /> Subjects
           </Link>
           <div className="flex items-center gap-3 p-3 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer font-medium">
             <CalendarDays className="h-5 w-5" /> Planner
@@ -73,7 +78,7 @@ function LandingPage() {
           Dashboard
         </h1>
         <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-          Your AI Study Planner is ready. Navigate to your profile to set up your study preferences.
+          Your AI Study Planner is ready. Navigate to Subjects to add your syllabus.
         </p>
       </div>
     </div>
@@ -91,6 +96,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Layout><LandingPage /></Layout>} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
+          <Route path="/subjects" element={<Layout><Subjects /></Layout>} />
+          <Route path="/subjects/:id" element={<Layout><SubjectDetail /></Layout>} />
         </Route>
         
         {/* Redirect root to dashboard */}
