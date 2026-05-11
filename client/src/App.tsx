@@ -7,8 +7,9 @@ import Profile from './pages/dashboard/Profile';
 import Subjects from './pages/dashboard/Subjects';
 import SubjectDetail from './pages/dashboard/SubjectDetail';
 import Timetable from './pages/dashboard/Timetable';
+import Chat from './pages/dashboard/Chat';
 import { useAuthStore } from './store/authStore';
-import { LayoutDashboard, CalendarDays, BookOpen, BarChart3, UserCircle, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, BarChart3, UserCircle, LogOut, MessageSquareText } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -30,6 +31,9 @@ function Layout({ children }: { children: React.ReactNode }) {
           </Link>
           <Link to="/subjects" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <BookOpen className="h-5 w-5" /> Subjects
+          </Link>
+          <Link to="/chat" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <MessageSquareText className="h-5 w-5" /> AI Assistant
           </Link>
           <div className="flex items-center gap-3 p-3 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer font-medium">
             <BarChart3 className="h-5 w-5" /> Analytics
@@ -79,7 +83,7 @@ function LandingPage() {
           Dashboard
         </h1>
         <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-          Your AI Study Planner is ready. Navigate to the Planner to generate your schedule.
+          Your AI Study Planner is ready. Navigate to the AI Assistant to get started.
         </p>
       </div>
     </div>
@@ -97,6 +101,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Layout><LandingPage /></Layout>} />
           <Route path="/timetable" element={<Layout><Timetable /></Layout>} />
+          <Route path="/chat" element={<Layout><Chat /></Layout>} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/subjects" element={<Layout><Subjects /></Layout>} />
           <Route path="/subjects/:id" element={<Layout><SubjectDetail /></Layout>} />
