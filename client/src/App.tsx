@@ -8,8 +8,9 @@ import Subjects from './pages/dashboard/Subjects';
 import SubjectDetail from './pages/dashboard/SubjectDetail';
 import Timetable from './pages/dashboard/Timetable';
 import Chat from './pages/dashboard/Chat';
+import Progress from './pages/dashboard/Progress';
 import { useAuthStore } from './store/authStore';
-import { LayoutDashboard, CalendarDays, BookOpen, BarChart3, UserCircle, LogOut, MessageSquareText } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -32,12 +33,12 @@ function Layout({ children }: { children: React.ReactNode }) {
           <Link to="/subjects" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <BookOpen className="h-5 w-5" /> Subjects
           </Link>
+          <Link to="/progress" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <Target className="h-5 w-5" /> Progress
+          </Link>
           <Link to="/chat" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <MessageSquareText className="h-5 w-5" /> AI Assistant
           </Link>
-          <div className="flex items-center gap-3 p-3 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer font-medium">
-            <BarChart3 className="h-5 w-5" /> Analytics
-          </div>
           <Link to="/profile" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <UserCircle className="h-5 w-5" /> Profile
           </Link>
@@ -83,7 +84,7 @@ function LandingPage() {
           Dashboard
         </h1>
         <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-          Your AI Study Planner is ready. Navigate to the AI Assistant to get started.
+          Your AI Study Planner is ready. Check your Progress to keep the streak going!
         </p>
       </div>
     </div>
@@ -101,6 +102,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Layout><LandingPage /></Layout>} />
           <Route path="/timetable" element={<Layout><Timetable /></Layout>} />
+          <Route path="/progress" element={<Layout><Progress /></Layout>} />
           <Route path="/chat" element={<Layout><Chat /></Layout>} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/subjects" element={<Layout><Subjects /></Layout>} />

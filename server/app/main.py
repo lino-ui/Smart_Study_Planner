@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.routers import auth, users, subjects, timetable, llm
-from app.models import subject, timetable as timetable_model, chat # Ensure models are loaded for create_all
+from app.routers import auth, users, subjects, timetable, llm, progress
+from app.models import subject, timetable as timetable_model, chat, progress as progress_model # Ensure models are loaded for create_all
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,6 +38,7 @@ app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["u
 app.include_router(subjects.router, prefix=f"{settings.API_V1_STR}/subjects", tags=["subjects"])
 app.include_router(timetable.router, prefix=f"{settings.API_V1_STR}/timetable", tags=["timetable"])
 app.include_router(llm.router, prefix=f"{settings.API_V1_STR}/llm", tags=["llm"])
+app.include_router(progress.router, prefix=f"{settings.API_V1_STR}/progress", tags=["progress"])
 
 @app.get("/")
 def root():
