@@ -1,9 +1,11 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import Profile from './pages/dashboard/Profile';
 import { useAuthStore } from './store/authStore';
+import { LayoutDashboard, CalendarDays, BarChart3, UserCircle, LogOut } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -12,30 +14,45 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen w-full bg-background font-sans">
       <aside className="hidden w-64 flex-col border-r bg-card shadow-soft md:flex">
         <div className="flex h-16 items-center px-6 border-b">
-          <span className="text-xl font-bold text-primary">Smart Study</span>
+          <span className="text-xl font-bold text-primary flex items-center gap-2">
+            <CalendarDays className="h-6 w-6" /> Smart Study
+          </span>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <div className="p-2 rounded-md bg-primary/10 text-primary font-medium">Dashboard</div>
-          <div className="p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer">Planner</div>
-          <div className="p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer">Analytics</div>
+        <nav className="flex-1 p-4 space-y-1">
+          <Link to="/dashboard" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <LayoutDashboard className="h-5 w-5" /> Dashboard
+          </Link>
+          <div className="flex items-center gap-3 p-3 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer font-medium">
+            <CalendarDays className="h-5 w-5" /> Planner
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer font-medium">
+            <BarChart3 className="h-5 w-5" /> Analytics
+          </div>
+          <Link to="/profile" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <UserCircle className="h-5 w-5" /> Profile
+          </Link>
         </nav>
       </aside>
 
       <div className="flex flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b bg-card px-6 shadow-sm">
           <div className="md:hidden text-xl font-bold text-primary">Smart Study</div>
-          <div className="hidden md:block text-sm text-muted-foreground">
-            {user ? `Welcome back, ${user.full_name.split(' ')[0]}` : 'Welcome back, Student'}
+          <div className="hidden md:block text-sm text-muted-foreground font-medium">
+            {user ? `Welcome back, ${user.full_name.split(' ')[0]}` : 'Welcome back'}
           </div>
           <div className="flex items-center gap-4">
             <button 
               onClick={logout}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors"
             >
-              Logout
+              <LogOut className="h-4 w-4" /> Logout
             </button>
-            <div className="h-8 w-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold uppercase">
-              {user ? user.full_name.charAt(0) : 'U'}
+            <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase shadow-sm border border-primary/10">
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt="Avatar" className="h-full w-full rounded-full object-cover" />
+              ) : (
+                user ? user.full_name.charAt(0) : 'U'
+              )}
             </div>
           </div>
         </header>
@@ -56,20 +73,8 @@ function LandingPage() {
           Dashboard
         </h1>
         <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-          This is a protected area. You can now access your smart tools.
+          Your AI Study Planner is ready. Navigate to your profile to set up your study preferences.
         </p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mt-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="p-6 bg-card rounded-xl shadow-soft border border-border/50 flex flex-col items-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <div className="w-6 h-6 bg-primary rounded-sm opacity-80" />
-            </div>
-            <h3 className="font-semibold text-lg">Feature {i}</h3>
-            <p className="text-sm text-muted-foreground text-center">Intelligent organization to help you stay ahead.</p>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -85,6 +90,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Layout><LandingPage /></Layout>} />
+          <Route path="/profile" element={<Layout><Profile /></Layout>} />
         </Route>
         
         {/* Redirect root to dashboard */}

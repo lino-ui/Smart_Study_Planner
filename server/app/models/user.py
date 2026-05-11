@@ -15,3 +15,11 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     avatar_url = Column(String, nullable=True)
+    
+    # Module 3: Profile & Preferences Extensions
+    bio = Column(String, nullable=True)
+    preferred_study_time = Column(String, default="Flexible") # Morning, Evening, Flexible
+    break_duration_minutes = Column(Integer, default=5)
+    pomodoro_length_minutes = Column(Integer, default=25)
+    long_break_after = Column(Integer, default=4)
+

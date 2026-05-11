@@ -11,6 +11,11 @@ export interface User {
   daily_study_hours: number;
   is_active: boolean;
   avatar_url?: string;
+  bio?: string;
+  preferred_study_time: string;
+  break_duration_minutes: number;
+  pomodoro_length_minutes: number;
+  long_break_after: number;
 }
 
 interface AuthState {
