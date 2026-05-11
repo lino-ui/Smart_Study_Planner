@@ -1,16 +1,20 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import { useAuthStore } from './store/authStore';
 
 function Layout({ children }: { children: React.ReactNode }) {
+  const { user, logout } = useAuthStore();
+  
   return (
     <div className="flex min-h-screen w-full bg-background font-sans">
-      {/* Sidebar Placeholder */}
       <aside className="hidden w-64 flex-col border-r bg-card shadow-soft md:flex">
         <div className="flex h-16 items-center px-6 border-b">
           <span className="text-xl font-bold text-primary">Smart Study</span>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          {/* Navigation Links */}
           <div className="p-2 rounded-md bg-primary/10 text-primary font-medium">Dashboard</div>
           <div className="p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer">Planner</div>
           <div className="p-2 rounded-md hover:bg-muted text-muted-foreground transition-colors cursor-pointer">Analytics</div>
@@ -18,18 +22,24 @@ function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex flex-1 flex-col">
-        {/* Navbar Placeholder */}
         <header className="flex h-16 items-center justify-between border-b bg-card px-6 shadow-sm">
           <div className="md:hidden text-xl font-bold text-primary">Smart Study</div>
-          <div className="hidden md:block text-sm text-muted-foreground">Welcome back, Student</div>
+          <div className="hidden md:block text-sm text-muted-foreground">
+            {user ? `Welcome back, ${user.full_name.split(' ')[0]}` : 'Welcome back, Student'}
+          </div>
           <div className="flex items-center gap-4">
-            <div className="h-8 w-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold">
-              U
+            <button 
+              onClick={logout}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Logout
+            </button>
+            <div className="h-8 w-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold uppercase">
+              {user ? user.full_name.charAt(0) : 'U'}
             </div>
           </div>
         </header>
 
-        {/* Main Content Area */}
         <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>
@@ -43,10 +53,10 @@ function LandingPage() {
     <div className="flex flex-col items-center justify-center h-full space-y-6 text-center animate-in fade-in zoom-in duration-500">
       <div className="space-y-2">
         <h1 className="text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">
-          Smart Study Planner
+          Dashboard
         </h1>
         <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-          Manage your studies intelligently with AI. A clean, minimalistic, and calm environment to enhance your focus and academic performance.
+          This is a protected area. You can now access your smart tools.
         </p>
       </div>
       
@@ -69,7 +79,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout><LandingPage /></Layout>} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Layout><LandingPage /></Layout>} />
+        </Route>
+        
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
