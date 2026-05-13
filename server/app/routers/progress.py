@@ -15,6 +15,7 @@ from app.schemas.progress import (
     StudyLogCreate, StudyLogUpdate, StudyLogResponse, 
     DailyProgressSummary, SubjectProgressResponse
 )
+from app.services.gamification_service import process_activity
 
 router = APIRouter()
 
@@ -47,6 +48,11 @@ async def log_study_session(
 
     await db.commit()
     await db.refresh(db_log)
+
+    # Trigger gamification
+    await process_activity(db, current_user.id, "study_session", log_in.duration_minutes)
+    if log_in.chapter_id and 'chapter' in locals() and chapter and chapter.status == ChapterStatus.COMPLETED:
+        await process_activity(db, current_user.id, "chapter_completed", 0)
 
     # Attach joined data for response
     response_dict = db_log.__dict__.copy()
