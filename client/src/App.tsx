@@ -12,8 +12,9 @@ import Chat from './pages/dashboard/Chat';
 import Progress from './pages/dashboard/Progress';
 import Analytics from './pages/dashboard/Analytics';
 import Gamification from './pages/dashboard/Gamification';
+import Documents from './pages/dashboard/Documents';
 import { useAuthStore } from './store/authStore';
-import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy, FileText } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -42,11 +43,14 @@ function Layout({ children }: { children: React.ReactNode }) {
           <Link to="/analytics" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <BarChart3 className="h-5 w-5" /> Analytics
           </Link>
-          <Link to="/gamification" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
-            <Trophy className="h-5 w-5" /> Achievements
+          <Link to="/documents" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <FileText className="h-5 w-5" /> Library
           </Link>
           <Link to="/chat" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <MessageSquareText className="h-5 w-5" /> AI Assistant
+          </Link>
+          <Link to="/gamification" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <Trophy className="h-5 w-5" /> Achievements
           </Link>
           <Link to="/profile" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <UserCircle className="h-5 w-5" /> Profile
@@ -99,6 +103,7 @@ function App() {
           <Route path="/progress" element={<Layout><Progress /></Layout>} />
           <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
           <Route path="/gamification" element={<Layout><Gamification /></Layout>} />
+          <Route path="/documents" element={<Layout><Documents /></Layout>} />
           <Route path="/chat" element={<Layout><Chat /></Layout>} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/subjects" element={<Layout><Subjects /></Layout>} />

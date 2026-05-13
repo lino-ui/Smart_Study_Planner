@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Trash2, Lightbulb, Loader2, Copy, Check } from 'lucide-react';
+import { Send, Bot, User, Trash2, Lightbulb, Loader2, Copy, Check, FileText, Globe } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import api from '../../lib/axios';
 import { ChatMessage } from '../../types/chat';
+
+type ChatMode = 'general' | 'notes';
 
 export default function Chat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -10,6 +12,7 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [chatMode, setChatMode] = useState<ChatMode>('general');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -49,14 +52,29 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      const res = await api.post('/llm/chat', { message: textToSend.trim() });
-      setMessages(prev => [...prev, res.data]);
+      if (chatMode === 'general') {
+        const res = await api.post('/llm/chat', { message: textToSend.trim() });
+        setMessages(prev => [...prev, res.data]);
+      } else {
+        // RAG Query
+        const res = await api.post('/documents/query-context', { query: textToSend.trim() });
+        
+        // Formulate a chat message from the RAG response
+        const ragMessage: ChatMessage = {
+          role: 'assistant',
+          content: res.data.answer + (res.data.context_used ? "\n\n*(Source: Your Uploaded Notes)*" : "")
+        };
+        
+        // We append it locally. To save history we might need to sync with backend, 
+        // but for now, RAG queries might just be ephemeral or appended locally.
+        // Let's just append locally for the scope of this feature.
+        setMessages(prev => [...prev, ragMessage]);
+      }
     } catch (err) {
       console.error("Chat error", err);
-      // Fallback message on error
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I'm having trouble connecting to the server right now. Please make sure the backend is running and GEMINI_API_KEY is configured." 
+        content: "I'm having trouble connecting to the server. If you are using 'Chat with Notes', make sure you have uploaded documents first." 
       }]);
     } finally {
       setIsLoading(false);
@@ -65,7 +83,6 @@ export default function Chat() {
 
   const handleClear = async () => {
     if (!window.confirm("Are you sure you want to clear your chat history?")) return;
-    
     try {
       await api.delete('/llm/history');
       setMessages([]);
@@ -80,18 +97,25 @@ export default function Chat() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const suggestions = [
+  const generalSuggestions = [
     "Explain polynomial time complexity simply.",
     "Generate a 5-question quiz on Database Normalization.",
-    "I'm feeling overwhelmed with my exams. How should I prioritize?",
-    "Summarize the key differences between TCP and UDP."
+    "I'm feeling overwhelmed with my exams. How should I prioritize?"
   ];
+
+  const notesSuggestions = [
+    "Summarize chapter 1 of my uploaded notes.",
+    "What are the main formulas mentioned in the document?",
+    "Explain the core concept from the syllabus I uploaded."
+  ];
+
+  const suggestions = chatMode === 'general' ? generalSuggestions : notesSuggestions;
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] max-w-5xl mx-auto border bg-card rounded-xl shadow-sm overflow-hidden animate-in fade-in duration-500">
       
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-border/50 bg-muted/10 gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
             <Bot className="h-6 w-6" />
@@ -104,15 +128,37 @@ export default function Chat() {
           </div>
         </div>
         
-        {messages.length > 0 && (
-          <button 
-            onClick={handleClear}
-            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-            title="Clear Chat History"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-        )}
+        <div className="flex items-center gap-4">
+          {/* Mode Toggle */}
+          <div className="flex items-center bg-background rounded-lg border p-1 shadow-sm">
+            <button
+              onClick={() => setChatMode('general')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                chatMode === 'general' ? 'bg-primary text-primary-foreground shadow' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Globe className="h-4 w-4" /> General Tutor
+            </button>
+            <button
+              onClick={() => setChatMode('notes')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                chatMode === 'notes' ? 'bg-secondary text-secondary-foreground shadow' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <FileText className="h-4 w-4" /> Chat with Notes
+            </button>
+          </div>
+
+          {messages.length > 0 && (
+            <button 
+              onClick={handleClear}
+              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+              title="Clear Chat History"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Chat Messages */}
@@ -124,16 +170,20 @@ export default function Chat() {
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
             <div className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2 shadow-soft">
-              <Bot className="h-10 w-10" />
+              {chatMode === 'general' ? <Bot className="h-10 w-10" /> : <FileText className="h-10 w-10 text-secondary" />}
             </div>
             <div>
-              <h3 className="text-2xl font-bold mb-2 text-foreground">How can I help you study today?</h3>
+              <h3 className="text-2xl font-bold mb-2 text-foreground">
+                {chatMode === 'general' ? 'How can I help you study today?' : 'Ask me anything about your uploaded notes!'}
+              </h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                I can explain complex topics, test your knowledge with quizzes, or help you manage your study anxiety.
+                {chatMode === 'general' 
+                  ? 'I can explain complex topics, test your knowledge with quizzes, or help you manage your study anxiety.'
+                  : 'I will scan through all the PDFs and TXT files you uploaded in the Library and answer based strictly on that context.'}
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full max-w-3xl mt-4">
               {suggestions.map((s, i) => (
                 <button
                   key={i}
@@ -175,7 +225,7 @@ export default function Chat() {
                       )}
                     </div>
                     
-                    {/* Actions (Copy) */}
+                    {/* Actions */}
                     {!isUser && (
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
                         <button 
@@ -220,19 +270,23 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isLoading}
-            placeholder="Ask your study assistant anything..."
+            placeholder={chatMode === 'general' ? "Ask your study assistant anything..." : "Ask a question about your uploaded notes..."}
             className="w-full bg-background border border-input rounded-full pl-4 pr-12 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm disabled:opacity-50 transition-all"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="absolute right-1.5 h-10 w-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 disabled:hover:bg-primary transition-colors"
+            className={`absolute right-1.5 h-10 w-10 text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-50 transition-colors ${
+              chatMode === 'general' ? 'bg-primary hover:bg-primary/90' : 'bg-secondary hover:bg-secondary/90'
+            }`}
           >
             <Send className="h-4 w-4 ml-0.5" />
           </button>
         </form>
         <p className="text-center text-[10px] text-muted-foreground mt-2 font-medium">
-          AI can make mistakes. Verify important academic information.
+          {chatMode === 'general' 
+            ? "AI can make mistakes. Verify important academic information." 
+            : "RAG Mode: The AI will strictly use context from your uploaded library."}
         </p>
       </div>
     </div>
