@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, Trash2, Lightbulb, Loader2, Copy, Check, FileText, Globe } from 'lucide-react';
+import { Send, Bot, User, Trash2, Lightbulb, Loader2, Copy, Check, FileText, Globe, Mic } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import api from '../../lib/axios';
 import { ChatMessage } from '../../types/chat';
@@ -13,6 +13,7 @@ export default function Chat() {
   const [isFetching, setIsFetching] = useState(true);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [chatMode, setChatMode] = useState<ChatMode>('general');
+  const [isListening, setIsListening] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +96,30 @@ export default function Chat() {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleListen = () => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Your browser does not support Speech Recognition. Try Google Chrome.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(prev => prev ? prev + " " + transcript : transcript);
+      setIsListening(false);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
   };
 
   const generalSuggestions = [
@@ -264,19 +289,31 @@ export default function Chat() {
 
       {/* Input Area */}
       <div className="p-4 bg-card border-t border-border/50">
-        <form onSubmit={handleSend} className="relative flex items-center">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isLoading}
-            placeholder={chatMode === 'general' ? "Ask your study assistant anything..." : "Ask a question about your uploaded notes..."}
-            className="w-full bg-background border border-input rounded-full pl-4 pr-12 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm disabled:opacity-50 transition-all"
-          />
+        <form onSubmit={handleSend} className="relative flex items-center gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isLoading}
+              placeholder={chatMode === 'general' ? "Ask your study assistant anything..." : "Ask a question about your uploaded notes..."}
+              className="w-full bg-background border border-input rounded-full pl-4 pr-12 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm disabled:opacity-50 transition-all"
+            />
+            <button
+              type="button"
+              onClick={handleListen}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors ${
+                isListening ? 'text-destructive bg-destructive/10 animate-pulse' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Dictate message"
+            >
+              <Mic className="h-4 w-4" />
+            </button>
+          </div>
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className={`absolute right-1.5 h-10 w-10 text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-50 transition-colors ${
+            className={`shrink-0 h-11 w-11 text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-50 transition-colors ${
               chatMode === 'general' ? 'bg-primary hover:bg-primary/90' : 'bg-secondary hover:bg-secondary/90'
             }`}
           >

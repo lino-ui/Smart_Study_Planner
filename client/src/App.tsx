@@ -12,6 +12,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
 import NotFound from './pages/NotFound';
 import SplashLoader from './components/SplashLoader';
+import { CommandPalette } from './components/CommandPalette';
 
 // Lazy loaded modules to optimize bundle size
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
@@ -57,6 +58,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   
   return (
     <div className="flex min-h-screen w-full bg-background font-sans">
+      <CommandPalette />
       <aside className="hidden w-64 flex-col border-r bg-card shadow-soft md:flex">
         <div className="flex h-16 items-center px-6 border-b">
           <span className="text-xl font-bold text-primary flex items-center gap-2">
