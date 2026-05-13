@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.routers import auth, users, subjects, timetable, llm, progress, analytics, gamification
+from app.routers import auth, users, subjects, timetable, llm, progress, analytics, gamification, dashboard
 from app.models import subject, timetable as timetable_model, chat, progress as progress_model, gamification as gamification_model
 
 @asynccontextmanager
@@ -41,6 +41,7 @@ app.include_router(llm.router, prefix=f"{settings.API_V1_STR}/llm", tags=["llm"]
 app.include_router(progress.router, prefix=f"{settings.API_V1_STR}/progress", tags=["progress"])
 app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics", tags=["analytics"])
 app.include_router(gamification.router, prefix=f"{settings.API_V1_STR}/gamification", tags=["gamification"])
+app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["dashboard"])
 
 @app.get("/")
 def root():

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import Dashboard from './pages/dashboard/Dashboard';
 import Profile from './pages/dashboard/Profile';
 import Subjects from './pages/dashboard/Subjects';
 import SubjectDetail from './pages/dashboard/SubjectDetail';
@@ -84,21 +85,6 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function LandingPage() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full space-y-6 text-center animate-in fade-in zoom-in duration-500">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">
-          Dashboard
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-[600px] mx-auto">
-          Your AI Study Planner is ready. Keep pushing your level higher in Achievements!
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   return (
     <BrowserRouter>
@@ -108,7 +94,7 @@ function App() {
         
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Layout><LandingPage /></Layout>} />
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/timetable" element={<Layout><Timetable /></Layout>} />
           <Route path="/progress" element={<Layout><Progress /></Layout>} />
           <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
