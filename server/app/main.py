@@ -15,11 +15,27 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     yield
 
+tags_metadata = [
+    {"name": "auth", "description": "Operations with users and authentication."},
+    {"name": "users", "description": "User profile management."},
+    {"name": "subjects", "description": "Manage study subjects and syllabus."},
+    {"name": "timetable", "description": "Smart scheduling and calendar features."},
+    {"name": "llm", "description": "AI Tutor chat endpoints."},
+    {"name": "progress", "description": "Log study sessions and chapters."},
+    {"name": "analytics", "description": "Data reporting and visualizations."},
+    {"name": "gamification", "description": "XP, Levels, and Badges."},
+    {"name": "documents", "description": "Upload and manage RAG documents."},
+    {"name": "productivity", "description": "Habit tracker and Pomodoro logs."}
+]
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    description="Smart Study Planner API",
+    description="Smart Study Planner API. A fully comprehensive backend for student productivity.",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_tags=tags_metadata,
+    docs_url=f"{settings.API_V1_STR}/docs",
+    redoc_url=f"{settings.API_V1_STR}/redoc",
     lifespan=lifespan
 )
 

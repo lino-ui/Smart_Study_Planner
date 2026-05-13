@@ -7,10 +7,15 @@ import {
 import { Download, BrainCircuit, Activity, BookOpen, Clock, Target, Loader2 } from 'lucide-react';
 import api from '../../lib/axios';
 import { AnalyticsReport } from '../../types/analytics';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+import { toast } from 'sonner';
 
 export default function Analytics() {
   const [report, setReport] = useState<AnalyticsReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const reportRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -50,6 +55,35 @@ export default function Analytics() {
     Hours: s.hours_spent * 2, // Scale up visually
     fullMark: 100
   }));
+
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+    
+    try {
+      setIsExporting(true);
+      toast.loading("Generating PDF Report...", { id: "pdf-export" });
+      
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Study_Analytics_${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      toast.success("Report downloaded successfully!", { id: "pdf-export" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF.", { id: "pdf-export" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Simple Heatmap Grid Generator
   const renderHeatmap = () => {
@@ -91,7 +125,7 @@ export default function Analytics() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
+    <div ref={reportRef} className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12 px-4 sm:px-0">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -101,8 +135,13 @@ export default function Analytics() {
           </h1>
           <p className="text-muted-foreground mt-1">Deep dive into your study patterns and performance metrics.</p>
         </div>
-        <button className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-          <Download className="mr-2 h-4 w-4" /> Export Report
+        <button 
+          onClick={handleExportPDF}
+          disabled={isExporting}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 disabled:opacity-50"
+        >
+          {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+          Export Report
         </button>
       </div>
 
