@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.routers import auth, users, subjects, timetable, llm, progress, analytics, gamification, dashboard, rag
-from app.models import subject, timetable as timetable_model, chat, progress as progress_model, gamification as gamification_model, document as document_model
+from app.routers import auth, users, subjects, timetable, llm, progress, analytics, gamification, dashboard, rag, productivity
+from app.models import subject, timetable as timetable_model, chat, progress as progress_model, gamification as gamification_model, document as document_model, productivity as productivity_model
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +43,7 @@ app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics", 
 app.include_router(gamification.router, prefix=f"{settings.API_V1_STR}/gamification", tags=["gamification"])
 app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["dashboard"])
 app.include_router(rag.router, prefix=f"{settings.API_V1_STR}/documents", tags=["documents"])
+app.include_router(productivity.router, prefix=f"{settings.API_V1_STR}/productivity", tags=["productivity"])
 
 @app.get("/")
 def root():

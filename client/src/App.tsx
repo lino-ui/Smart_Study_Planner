@@ -13,8 +13,9 @@ import Progress from './pages/dashboard/Progress';
 import Analytics from './pages/dashboard/Analytics';
 import Gamification from './pages/dashboard/Gamification';
 import Documents from './pages/dashboard/Documents';
+import Pomodoro from './pages/dashboard/Pomodoro';
 import { useAuthStore } from './store/authStore';
-import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy, FileText } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy, FileText, Flame } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -33,6 +34,9 @@ function Layout({ children }: { children: React.ReactNode }) {
           </Link>
           <Link to="/timetable" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <CalendarDays className="h-5 w-5" /> Planner
+          </Link>
+          <Link to="/pomodoro" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
+            <Flame className="h-5 w-5" /> Focus Space
           </Link>
           <Link to="/subjects" className="flex items-center gap-3 p-3 rounded-md hover:bg-primary/10 text-foreground hover:text-primary transition-colors cursor-pointer font-medium">
             <BookOpen className="h-5 w-5" /> Subjects
@@ -100,6 +104,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/timetable" element={<Layout><Timetable /></Layout>} />
+          <Route path="/pomodoro" element={<Layout><Pomodoro /></Layout>} />
           <Route path="/progress" element={<Layout><Progress /></Layout>} />
           <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
           <Route path="/gamification" element={<Layout><Gamification /></Layout>} />
