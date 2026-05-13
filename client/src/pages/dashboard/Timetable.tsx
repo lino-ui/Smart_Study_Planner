@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Wand2, CheckCircle2, Circle, Loader2, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Wand2, CheckCircle2, Circle, Loader2, Clock, Download } from 'lucide-react';
 import api from '../../lib/axios';
 import { DailyTask } from '../../types/timetable';
 import { useAuthStore } from '../../store/authStore';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+import { toast } from 'sonner';
 
 export default function Timetable() {
   const { user } = useAuthStore();
   const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const timetableRef = React.useRef<HTMLDivElement>(null);
 
   // Get the start of the week (Sunday)
   const getStartOfWeek = (date: Date) => {
@@ -56,6 +61,35 @@ export default function Timetable() {
       setMessage({ type: 'error', text: err.response?.data?.detail || 'Failed to generate timetable' });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!timetableRef.current) return;
+    
+    try {
+      setIsExporting(true);
+      toast.loading("Generating PDF Schedule...", { id: "pdf-schedule" });
+      
+      const canvas = await html2canvas(timetableRef.current, {
+        scale: 2,
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff',
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape format for wider tables
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Study_Schedule_${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      toast.success("Schedule downloaded successfully!", { id: "pdf-schedule" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate PDF.", { id: "pdf-schedule" });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -110,6 +144,16 @@ export default function Timetable() {
           <p className="text-muted-foreground mt-1">Your AI-generated optimal study schedule.</p>
         </div>
         <div className="flex gap-3">
+          {tasks.length > 0 && (
+            <button 
+              onClick={handleExportPDF}
+              disabled={isExporting}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 disabled:opacity-50"
+            >
+              {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Export PDF
+            </button>
+          )}
           <button
             onClick={() => generateTimetable(true)}
             disabled={isGenerating}
@@ -127,7 +171,7 @@ export default function Timetable() {
         </div>
       )}
 
-      <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
+      <div ref={timetableRef} className="bg-card border rounded-xl shadow-sm overflow-hidden p-1">
         {/* Calendar Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/20">
           <button onClick={prevWeek} className="p-2 hover:bg-muted rounded-full transition-colors">

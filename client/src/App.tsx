@@ -1,20 +1,8 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import Dashboard from './pages/dashboard/Dashboard';
-import Profile from './pages/dashboard/Profile';
-import Subjects from './pages/dashboard/Subjects';
-import SubjectDetail from './pages/dashboard/SubjectDetail';
-import Timetable from './pages/dashboard/Timetable';
-import Chat from './pages/dashboard/Chat';
-import Progress from './pages/dashboard/Progress';
-import Analytics from './pages/dashboard/Analytics';
-import Gamification from './pages/dashboard/Gamification';
-import Documents from './pages/dashboard/Documents';
-import Pomodoro from './pages/dashboard/Pomodoro';
-import NotFound from './pages/NotFound';
 import { useAuthStore } from './store/authStore';
 import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy, FileText, Flame } from 'lucide-react';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -22,7 +10,21 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
+import NotFound from './pages/NotFound';
+import SplashLoader from './components/SplashLoader';
 
+// Lazy loaded modules to optimize bundle size
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Profile = lazy(() => import('./pages/dashboard/Profile'));
+const Subjects = lazy(() => import('./pages/dashboard/Subjects'));
+const SubjectDetail = lazy(() => import('./pages/dashboard/SubjectDetail'));
+const Timetable = lazy(() => import('./pages/dashboard/Timetable'));
+const Chat = lazy(() => import('./pages/dashboard/Chat'));
+const Progress = lazy(() => import('./pages/dashboard/Progress'));
+const Analytics = lazy(() => import('./pages/dashboard/Analytics'));
+const Gamification = lazy(() => import('./pages/dashboard/Gamification'));
+const Documents = lazy(() => import('./pages/dashboard/Documents'));
+const Pomodoro = lazy(() => import('./pages/dashboard/Pomodoro'));
 function ErrorFallback({ error, resetErrorBoundary }: any) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
@@ -138,17 +140,17 @@ function App() {
             
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-              <Route path="/timetable" element={<Layout><Timetable /></Layout>} />
-              <Route path="/pomodoro" element={<Layout><Pomodoro /></Layout>} />
-              <Route path="/progress" element={<Layout><Progress /></Layout>} />
-              <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
-              <Route path="/gamification" element={<Layout><Gamification /></Layout>} />
-              <Route path="/documents" element={<Layout><Documents /></Layout>} />
-              <Route path="/chat" element={<Layout><Chat /></Layout>} />
-              <Route path="/profile" element={<Layout><Profile /></Layout>} />
-              <Route path="/subjects" element={<Layout><Subjects /></Layout>} />
-              <Route path="/subjects/:id" element={<Layout><SubjectDetail /></Layout>} />
+              <Route path="/dashboard" element={<Layout><Suspense fallback={<SplashLoader />}><Dashboard /></Suspense></Layout>} />
+              <Route path="/timetable" element={<Layout><Suspense fallback={<SplashLoader />}><Timetable /></Suspense></Layout>} />
+              <Route path="/pomodoro" element={<Layout><Suspense fallback={<SplashLoader />}><Pomodoro /></Suspense></Layout>} />
+              <Route path="/progress" element={<Layout><Suspense fallback={<SplashLoader />}><Progress /></Suspense></Layout>} />
+              <Route path="/analytics" element={<Layout><Suspense fallback={<SplashLoader />}><Analytics /></Suspense></Layout>} />
+              <Route path="/gamification" element={<Layout><Suspense fallback={<SplashLoader />}><Gamification /></Suspense></Layout>} />
+              <Route path="/documents" element={<Layout><Suspense fallback={<SplashLoader />}><Documents /></Suspense></Layout>} />
+              <Route path="/chat" element={<Layout><Suspense fallback={<SplashLoader />}><Chat /></Suspense></Layout>} />
+              <Route path="/profile" element={<Layout><Suspense fallback={<SplashLoader />}><Profile /></Suspense></Layout>} />
+              <Route path="/subjects" element={<Layout><Suspense fallback={<SplashLoader />}><Subjects /></Suspense></Layout>} />
+              <Route path="/subjects/:id" element={<Layout><Suspense fallback={<SplashLoader />}><SubjectDetail /></Suspense></Layout>} />
             </Route>
             
             {/* Redirect root to dashboard */}
