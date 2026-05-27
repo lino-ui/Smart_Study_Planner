@@ -11,7 +11,7 @@ from app.core.dependencies import get_current_active_user
 from app.models.user import User
 from app.models.progress import StudyLog
 from app.models.subject import Subject, Chapter, ChapterStatus
-from app.models.timetable import TimetableSlot
+from app.models.timetable import DailyTask
 from app.schemas.dashboard import (
     DashboardOverviewResponse, DashboardTaskItem, DashboardExamItem, DashboardProgressSnapshot
 )
@@ -54,9 +54,9 @@ async def get_dashboard_overview(
     chapter_dict = {c.id: c for s in subjects for c in s.chapters}
     
     timetable_result = await db.execute(
-        select(TimetableSlot)
-        .where(TimetableSlot.user_id == current_user.id, TimetableSlot.date == today)
-        .order_by(TimetableSlot.start_time)
+        select(DailyTask)
+        .where(DailyTask.user_id == current_user.id, DailyTask.task_date == today)
+        .order_by(DailyTask.start_time)
     )
     slots = timetable_result.scalars().all()
     
@@ -83,15 +83,17 @@ async def get_dashboard_overview(
     # 4. Upcoming Exams
     exams = []
     for sub in subjects:
-        if sub.exam_date and sub.exam_date >= today:
-            days_left = (sub.exam_date - today).days
-            exams.append(DashboardExamItem(
-                subject_id=sub.id,
-                subject_name=sub.name,
-                subject_color=sub.color,
-                exam_date=sub.exam_date,
-                days_left=days_left
-            ))
+        if sub.exam_date:
+            exam_date_obj = sub.exam_date.date() if hasattr(sub.exam_date, 'date') else sub.exam_date
+            if exam_date_obj >= today:
+                days_left = (exam_date_obj - today).days
+                exams.append(DashboardExamItem(
+                    subject_id=sub.id,
+                    subject_name=sub.name,
+                    subject_color=sub.color,
+                    exam_date=sub.exam_date,
+                    days_left=days_left
+                ))
     # Sort by closest exam, take top 3
     exams.sort(key=lambda x: x.days_left)
     exams = exams[:3]

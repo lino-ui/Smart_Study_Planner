@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Settings, Maximize2, Minimize2, CheckCircle2, Flame, Loader2, Music } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Play, Pause, RotateCcw, Maximize2, Minimize2, CheckCircle2, Flame, Music, Trash2 } from 'lucide-react';
 import api from '../../lib/axios';
 import { Habit } from '../../types/productivity';
 import { Subject } from '../../types/subject';

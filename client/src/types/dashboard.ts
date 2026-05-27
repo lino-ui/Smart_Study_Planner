@@ -4,7 +4,7 @@ export interface DashboardTaskItem {
   subject_color: string;
   chapter_title: string;
   start_time: string;
-  duration_minutes: int;
+  duration_minutes: number;
   is_completed: boolean;
 }
 

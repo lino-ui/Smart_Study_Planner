@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Flame, Clock, Target, Plus, BookOpen, Smile, Battery, Loader2 } from 'lucide-react';
 import api from '../../lib/axios';
-import { ProgressOverview, StudyLog, DailyProgressSummary, StudyLogCreate } from '../../types/progress';
+import { ProgressOverview, StudyLog, DailyProgressSummary } from '../../types/progress';
 import { Subject } from '../../types/subject';
 
 const logSchema = z.object({
@@ -31,7 +31,7 @@ export default function Progress() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting }, watch } = useForm<LogFormValues>({
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<LogFormValues>({
     resolver: zodResolver(logSchema),
     defaultValues: {
       log_date: new Date().toISOString().split('T')[0],
@@ -41,7 +41,6 @@ export default function Progress() {
     }
   });
 
-  const selectedSubjectId = watch('subject_id');
 
   const fetchData = async () => {
     try {

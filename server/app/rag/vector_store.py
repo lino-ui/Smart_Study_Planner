@@ -6,8 +6,13 @@ from typing import List, Dict, Any
 
 from app.core.config import settings
 
+# Load API key cleanly, falling back to direct active key if empty
+API_KEY = settings.GEMINI_API_KEY
+if not API_KEY or API_KEY == "dummy-key":
+    API_KEY = "AIzaSyCrbvdklOMhF4Fm7f9_KjmNLRw_pxzSiEg"
+
 # Initialize Google Generative AI for embeddings
-genai.configure(api_key=settings.GEMINI_API_KEY)
+genai.configure(api_key=API_KEY)
 
 # Initialize local ChromaDB
 CHROMA_DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "chroma_db")
@@ -23,27 +28,55 @@ def generate_embedding(text: str) -> list[float]:
     """
     Generates an embedding vector for the text using Gemini.
     """
-    if not settings.GEMINI_API_KEY:
-        # Fallback for dev without key: Return a dummy vector (Chroma requires standard length, usually 768 for models)
-        # Actually, if no key, we can't do real RAG. We'll return 0s if possible, or raise error.
+    if not API_KEY or API_KEY == "dummy-key":
+        # Fallback for dev without key: Return a dummy vector (768 length)
         return [0.0] * 768 
         
-    result = genai.embed_content(
-        model="models/embedding-001",
-        content=text,
-        task_type="retrieval_document"
-    )
-    return result['embedding']
+    try:
+        # Use standard modern text-embedding-004 model
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=text,
+            task_type="retrieval_document"
+        )
+        return result['embedding']
+    except Exception as e:
+        print(f"Error generating embeddings with models/text-embedding-004: {e}")
+        try:
+            # Fallback to gemini-embedding-2 model if text-embedding-004 fails
+            result = genai.embed_content(
+                model="models/gemini-embedding-2",
+                content=text,
+                task_type="retrieval_document"
+            )
+            return result['embedding']
+        except Exception as inner_e:
+            raise Exception(f"Failed to generate embeddings using Google Generative AI: {inner_e}")
 
 def generate_query_embedding(text: str) -> list[float]:
-    if not settings.GEMINI_API_KEY:
+    if not API_KEY or API_KEY == "dummy-key":
         return [0.0] * 768
-    result = genai.embed_content(
-        model="models/embedding-001",
-        content=text,
-        task_type="retrieval_query"
-    )
-    return result['embedding']
+        
+    try:
+        # Use standard modern text-embedding-004 model
+        result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=text,
+            task_type="retrieval_query"
+        )
+        return result['embedding']
+    except Exception as e:
+        print(f"Error generating query embeddings with models/text-embedding-004: {e}")
+        try:
+            # Fallback to gemini-embedding-2 model if text-embedding-004 fails
+            result = genai.embed_content(
+                model="models/gemini-embedding-2",
+                content=text,
+                task_type="retrieval_query"
+            )
+            return result['embedding']
+        except Exception as inner_e:
+            raise Exception(f"Failed to generate query embeddings using Google Generative AI: {inner_e}")
 
 def add_documents_to_store(user_id: int, document_id: int, chunks: List[str]):
     """

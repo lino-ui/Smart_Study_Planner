@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Award, Flame, Zap, Trophy, Crown, Star, BookOpen, Sunrise, Moon, CheckCircle2, Loader2 } from 'lucide-react';
 import api from '../../lib/axios';
 import { GamificationStats } from '../../types/gamification';

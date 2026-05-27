@@ -208,7 +208,7 @@ export default function Timetable() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:divide-x divide-border border-b border-border">
-            {Object.keys(groupedTasks).map((dateStr, index) => {
+            {Object.keys(groupedTasks).map((dateStr) => {
               const dayTasks = groupedTasks[dateStr];
               const dateObj = new Date(dateStr);
               const isToday = dateStr === new Date().toISOString().split('T')[0];

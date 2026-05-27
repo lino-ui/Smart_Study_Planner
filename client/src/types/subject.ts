@@ -3,7 +3,7 @@ export type ChapterStatus = "Not Started" | "In Progress" | "Completed";
 
 export interface Chapter {
   id: number;
-  subject_id: int;
+  subject_id: number;
   title: string;
   description?: string;
   difficulty: DifficultyLevel;

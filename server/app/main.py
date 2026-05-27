@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.routers import auth, users, subjects, timetable, llm, progress, analytics, gamification, dashboard, rag, productivity
-from app.models import subject, timetable as timetable_model, chat, progress as progress_model, gamification as gamification_model, document as document_model, productivity as productivity_model
+from app.models import subject, timetable as timetable_model, chat, progress as progress_model, gamification as gamification_model, document as document_model, productivity as productivity_model, user as user_model
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,7 +43,7 @@ app = FastAPI(
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=[str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -1,4 +1,4 @@
-import { Loader2, CalendarDays } from "lucide-react"
+import { CalendarDays } from "lucide-react"
 
 export default function SplashLoader() {
   return (

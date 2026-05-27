@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Clock, BookOpen, Target, MessageSquareText, CalendarDays, Loader2, CheckCircle2, ChevronRight, Play } from 'lucide-react';
 import api from '../../lib/axios';

@@ -26,9 +26,9 @@ def test_register_user():
 
 def test_login_user():
     response = client.post(
-        "/api/v1/auth/token",
-        data={
-            "username": TEST_EMAIL,
+        "/api/v1/auth/login",
+        json={
+            "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         }
     )
@@ -39,9 +39,9 @@ def test_login_user():
 
 def test_login_wrong_password():
     response = client.post(
-        "/api/v1/auth/token",
-        data={
-            "username": TEST_EMAIL,
+        "/api/v1/auth/login",
+        json={
+            "email": TEST_EMAIL,
             "password": "wrongpassword"
         }
     )

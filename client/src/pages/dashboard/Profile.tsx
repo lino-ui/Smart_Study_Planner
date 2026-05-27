@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,7 +9,7 @@ import { Loader2, User as UserIcon, Settings, Clock, Coffee, Brain } from 'lucid
 const profileSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),
   branch: z.string().optional(),
-  semester: z.string().transform((v) => v === '' ? undefined : Number(v)).optional(),
+  semester: z.preprocess((val) => val === '' || val === undefined || val === null ? undefined : Number(val), z.number().min(1).max(10).optional()),
   bio: z.string().max(160, "Bio max 160 characters").optional(),
 });
 
@@ -39,7 +39,7 @@ export default function Profile() {
     defaultValues: {
       full_name: user?.full_name || '',
       branch: user?.branch || '',
-      semester: user?.semester?.toString() || '',
+      semester: user?.semester || undefined,
       bio: user?.bio || '',
     },
   });
@@ -48,7 +48,7 @@ export default function Profile() {
     register: registerPrefs,
     handleSubmit: handlePrefsSubmit,
     watch: watchPrefs,
-    formState: { errors: prefsErrors },
+    formState: { errors: _prefsErrors },
   } = useForm<PreferencesFormValues>({
     resolver: zodResolver(preferencesSchema),
     defaultValues: {

@@ -1,41 +1,49 @@
-import os
 import google.generativeai as genai
 from typing import List, Dict
 
-# Configure the Gemini API key from environment variables
-# Note: Users must set GEMINI_API_KEY in their .env
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-
 class LLMClient:
     def __init__(self):
-        self.is_configured = bool(GEMINI_API_KEY)
-        if self.is_configured:
-            # Initialize the model (Gemini 1.5 Pro or standard depending on access, fallback to gemini-pro)
-            self.model = genai.GenerativeModel('gemini-1.5-pro-latest')
+        # Directly use the provided Gemini API key as requested
+        self.api_key = "AIzaSyCrbvdklOMhF4Fm7f9_KjmNLRw_pxzSiEg"
+        self.is_configured = True
+        
+        try:
+            # Configure the Gemini client
+            genai.configure(api_key=self.api_key)
+            # Use gemini-1.5-flash-latest to avoid 404 model-not-found issues
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
+        except Exception as e:
+            print(f"Error configuring Google Generative AI with gemini-2.5-flash: {e}")
+            try:
+                # Fallback to robust legacy gemini-pro if flash-latest throws an initialization error
+                self.model = genai.GenerativeModel('gemini-flash-latest')
+            except Exception as fallback_err:
+                print(f"Failed to load fallback gemini-flash-latest: {fallback_err}")
+                self.is_configured = False
 
     async def generate_response(self, system_prompt: str, history: List[Dict[str, str]], new_message: str) -> str:
         """
-        Generates a response using Gemini API.
-        If API key is missing, returns a mock response for development.
+        Generates a response using the official Gemini API with the hardcoded active API key.
         """
         if not self.is_configured:
-            return "This is a mock response from your Smart Study Assistant. To enable real AI responses, please set the `GEMINI_API_KEY` in your backend `.env` file."
+            return (
+                "😔 I apologize, but my Gemini AI brain is not fully configured yet.\n\n"
+                "Please verify that your Google Generative AI dependencies are correctly installed."
+            )
 
         try:
-            # Format history for Gemini
-            # Gemini expects format: [{"role": "user", "parts": ["hello"]}, {"role": "model", "parts": ["hi"]}]
+            # Format history for Gemini API
+            # Gemini expects format: [{"role": "user", "parts": ["text"]}, {"role": "model", "parts": ["text"]}]
             formatted_history = []
             
-            # Inject system prompt as the first message or context
-            # Gemini 1.5 supports system instructions natively, but for broader compatibility we can inject it into the first prompt
+            # Incorporate system prompt into the first user message or context for early grounding
             first_user_msg = f"System Context:\n{system_prompt}\n\nUser Message: "
             
             for i, msg in enumerate(history):
                 role = "model" if msg["role"] == "assistant" else "user"
                 content = msg["content"]
                 
+                # Ground the conversation with system prompt context on the first prompt
                 if i == 0 and role == "user":
                     content = first_user_msg + content
                 
@@ -44,10 +52,10 @@ class LLMClient:
                     "parts": [content]
                 })
 
+            # Start chat with configured history
             chat = self.model.start_chat(history=formatted_history)
             
-            # Send the new message
-            # If history was empty, we need to inject system prompt here
+            # Send message and get response
             if not history:
                 response = chat.send_message(f"System Context:\n{system_prompt}\n\nUser Message: {new_message}")
             else:
@@ -55,7 +63,27 @@ class LLMClient:
                 
             return response.text
         except Exception as e:
-            print(f"LLM Error: {e}")
-            return "I apologize, but I'm having trouble processing your request right now. Please try again later."
+            print(f"LLM Generative AI Error: {e}")
+            
+            # If a 404 error was returned, try to call a standard gemini-pro instance on-the-fly
+            if "404" in str(e):
+                try:
+                    fallback_model = genai.GenerativeModel('gemini-pro')
+                    chat = fallback_model.start_chat(history=formatted_history)
+                    if not history:
+                        response = chat.send_message(f"System Context:\n{system_prompt}\n\nUser Message: {new_message}")
+                    else:
+                        response = chat.send_message(new_message)
+                    return response.text
+                except Exception as inner_e:
+                    return (
+                        "😔 I apologize, but I encountered a model-not-found error communicating with the model.\n\n"
+                        f"*Technical Detail:* `{str(inner_e)}`"
+                    )
+
+            return (
+                "😔 I apologize, but I encountered an error communicating with my AI model.\n\n"
+                f"*Technical Detail:* `{str(e)}`"
+            )
 
 llm_client = LLMClient()

@@ -2,6 +2,11 @@ import os
 from typing import List, Union
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+# Resolve the absolute path to server/.env and load it explicitly
+server_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv(dotenv_path=os.path.join(server_root, ".env"))
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Smart Study Planner"
@@ -24,9 +29,11 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "dummy-key")
 
     class Config:
         case_sensitive = True
         env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()

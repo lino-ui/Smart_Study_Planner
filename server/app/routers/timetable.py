@@ -9,7 +9,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_active_user
 from app.models.user import User
 from app.models.timetable import DailyTask
-from app.models.subject import Subject
+from app.models.subject import Subject, Chapter
 from app.schemas.timetable import (
     DailyTaskResponse, DailyTaskUpdate, GenerateTimetableRequest
 )
@@ -33,6 +33,40 @@ async def api_generate_timetable(
         days_to_generate=request.days_to_generate,
         regenerate=request.regenerate
     )
+    
+    if not tasks:
+        # Check if they have subjects
+        subjects_result = await db.execute(
+            select(Subject).where(Subject.user_id == current_user.id)
+        )
+        subjects = subjects_result.scalars().all()
+        if not subjects:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You don't have any subjects yet! Please add your subjects (with their chapters) in the 'Subjects' section before generating a timetable."
+            )
+        else:
+            # Check if they have any chapters
+            has_chapters = False
+            for s in subjects:
+                # Eagerly load chapters if needed, or query them
+                chapters_result = await db.execute(
+                    select(Chapter).where(Chapter.subject_id == s.id)
+                )
+                if chapters_result.scalars().all():
+                    has_chapters = True
+                    break
+            
+            if not has_chapters:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="You have added subjects, but no chapters are defined! Please click on your subjects in the planner and add chapters to study."
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="All chapters in your subjects are marked as completed! Please add new chapters or adjust your chapter status to 'Not Started' or 'In Progress' to generate study tasks."
+                )
     
     return {
         "message": f"Successfully generated {len(tasks)} study tasks.",
@@ -58,7 +92,7 @@ async def get_weekly_timetable(
             DailyTask.task_date >= start_date,
             DailyTask.task_date <= end_date
         )
-        .order_by(DailyTask.task_date, DailyTask.id)
+        .order_by(DailyTask.task_date, DailyTask.start_time)
     )
     
     tasks = result.scalars().all()
