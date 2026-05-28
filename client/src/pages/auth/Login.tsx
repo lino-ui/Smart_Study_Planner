@@ -55,7 +55,7 @@ export default function Login() {
       <div className="w-full max-w-md bg-card p-8 rounded-2xl shadow-soft border border-border/50 animate-in fade-in zoom-in duration-300">
         <div className="text-center space-y-2 mb-8">
           <h1 className="text-3xl font-bold text-primary tracking-tight">Welcome Back</h1>
-          <p className="text-sm text-muted-foreground">Log in to your Smart Study Planner</p>
+          <p className="text-sm text-muted-foreground">Log in to your smartsstudyplanner</p>
         </div>
 
         {error && (
