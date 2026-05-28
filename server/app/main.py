@@ -9,9 +9,7 @@ from app.models import subject, timetable as timetable_model, chat, progress as 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB tables
     async with engine.begin() as conn:
-        # In a real app with Alembic, you would use migrations instead of create_all
         await conn.run_sync(Base.metadata.create_all)
     yield
 
@@ -31,23 +29,27 @@ tags_metadata = [
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    description="Smart Study Planner API. A fully comprehensive backend for student productivity.",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    description="Smart Study Planner API",
     openapi_tags=tags_metadata,
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",
     lifespan=lifespan
 )
 
-# Set all CORS enabled origins
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# ==================== CORS SETTINGS ====================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://smart-study-planner-237dd.web.app",   # Your Firebase Frontend
+        "http://localhost:5173",                       # Local Development
+        "http://127.0.0.1:5173",
+        "https://smart-study-planner-*.web.app",       # For any Firebase preview URLs
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ======================================================
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
@@ -66,7 +68,8 @@ def root():
     return {
         "project": settings.PROJECT_NAME,
         "message": "Welcome to the Smart Study Planner API",
-        "docs": "/docs"
+        "docs": "/docs",
+        "status": "running"
     }
 
 @app.get("/api/health")
