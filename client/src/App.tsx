@@ -62,7 +62,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       <aside className="hidden w-64 flex-col border-r bg-card shadow-soft md:flex">
         <div className="flex h-16 items-center px-6 border-b">
           <span className="text-xl font-bold text-primary flex items-center gap-2">
-            <CalendarDays className="h-6 w-6" /> smartsstudyplanner
+            <CalendarDays className="h-6 w-6" /> Smart Study
           </span>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -101,7 +101,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b bg-card px-6 shadow-sm">
-          <div className="md:hidden text-xl font-bold text-primary">smartsstudyplanner</div>
+          <div className="md:hidden text-xl font-bold text-primary">Smart Study</div>
           <div className="hidden md:block text-sm text-muted-foreground font-medium">
             {user ? `Welcome back, ${user.full_name.split(' ')[0]}` : 'Welcome back'}
           </div>

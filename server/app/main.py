@@ -31,7 +31,7 @@ tags_metadata = [
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
-    description="smartsstudyplanner API. A fully comprehensive backend for student productivity.",
+    description="Smart Study Planner API. A fully comprehensive backend for student productivity.",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     openapi_tags=tags_metadata,
     docs_url=f"{settings.API_V1_STR}/docs",
@@ -65,7 +65,7 @@ app.include_router(productivity.router, prefix=f"{settings.API_V1_STR}/productiv
 def root():
     return {
         "project": settings.PROJECT_NAME,
-        "message": "Welcome to the smartsstudyplanner API",
+        "message": "Welcome to the Smart Study Planner API",
         "docs": "/docs"
     }
 

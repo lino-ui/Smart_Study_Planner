@@ -9,7 +9,7 @@ server_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__
 load_dotenv(dotenv_path=os.path.join(server_root, ".env"))
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "smartsstudyplanner"
+    PROJECT_NAME: str = "Smart Study Planner"
     API_V1_STR: str = "/api/v1"
     
     # BACKEND_CORS_ORIGINS can be a JSON-formatted list or a comma-separated string
