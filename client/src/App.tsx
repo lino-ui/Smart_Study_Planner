@@ -1,10 +1,10 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { useAuthStore } from './store/authStore';
-import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy, FileText, Flame } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, BookOpen, Target, UserCircle, LogOut, MessageSquareText, BarChart3, Trophy, FileText, Flame, Menu, X } from 'lucide-react';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ThemeToggle } from './components/ThemeToggle';
 import { Toaster } from 'sonner';
@@ -46,6 +46,7 @@ function ErrorFallback({ error, resetErrorBoundary }: any) {
 function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
   const location = useLocation();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const getLinkClass = (path: string) => {
     const isActive = location.pathname.startsWith(path);
@@ -55,10 +56,47 @@ function Layout({ children }: { children: React.ReactNode }) {
         : 'text-foreground hover:bg-muted/80 hover:text-primary'
     }`;
   };
+
+  const navLinks = (
+    <>
+      <Link to="/dashboard" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/dashboard')}>
+        <LayoutDashboard className="h-5 w-5" /> Dashboard
+      </Link>
+      <Link to="/timetable" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/timetable')}>
+        <CalendarDays className="h-5 w-5" /> Planner
+      </Link>
+      <Link to="/pomodoro" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/pomodoro')}>
+        <Flame className="h-5 w-5" /> Focus Space
+      </Link>
+      <Link to="/subjects" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/subjects')}>
+        <BookOpen className="h-5 w-5" /> Subjects
+      </Link>
+      <Link to="/progress" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/progress')}>
+        <Target className="h-5 w-5" /> Progress
+      </Link>
+      <Link to="/analytics" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/analytics')}>
+        <BarChart3 className="h-5 w-5" /> Analytics
+      </Link>
+      <Link to="/documents" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/documents')}>
+        <FileText className="h-5 w-5" /> Library
+      </Link>
+      <Link to="/chat" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/chat')}>
+        <MessageSquareText className="h-5 w-5" /> AI Assistant
+      </Link>
+      <Link to="/gamification" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/gamification')}>
+        <Trophy className="h-5 w-5" /> Achievements
+      </Link>
+      <Link to="/profile" onClick={() => setIsMobileOpen(false)} className={getLinkClass('/profile')}>
+        <UserCircle className="h-5 w-5" /> Profile
+      </Link>
+    </>
+  );
   
   return (
     <div className="flex min-h-screen w-full bg-background font-sans">
       <CommandPalette />
+      
+      {/* Desktop Sidebar */}
       <aside className="hidden w-64 flex-col border-r bg-card shadow-soft md:flex">
         <div className="flex h-16 items-center px-6 border-b">
           <span className="text-xl font-bold text-primary flex items-center gap-2">
@@ -66,42 +104,47 @@ function Layout({ children }: { children: React.ReactNode }) {
           </span>
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          <Link to="/dashboard" className={getLinkClass('/dashboard')}>
-            <LayoutDashboard className="h-5 w-5" /> Dashboard
-          </Link>
-          <Link to="/timetable" className={getLinkClass('/timetable')}>
-            <CalendarDays className="h-5 w-5" /> Planner
-          </Link>
-          <Link to="/pomodoro" className={getLinkClass('/pomodoro')}>
-            <Flame className="h-5 w-5" /> Focus Space
-          </Link>
-          <Link to="/subjects" className={getLinkClass('/subjects')}>
-            <BookOpen className="h-5 w-5" /> Subjects
-          </Link>
-          <Link to="/progress" className={getLinkClass('/progress')}>
-            <Target className="h-5 w-5" /> Progress
-          </Link>
-          <Link to="/analytics" className={getLinkClass('/analytics')}>
-            <BarChart3 className="h-5 w-5" /> Analytics
-          </Link>
-          <Link to="/documents" className={getLinkClass('/documents')}>
-            <FileText className="h-5 w-5" /> Library
-          </Link>
-          <Link to="/chat" className={getLinkClass('/chat')}>
-            <MessageSquareText className="h-5 w-5" /> AI Assistant
-          </Link>
-          <Link to="/gamification" className={getLinkClass('/gamification')}>
-            <Trophy className="h-5 w-5" /> Achievements
-          </Link>
-          <Link to="/profile" className={getLinkClass('/profile')}>
-            <UserCircle className="h-5 w-5" /> Profile
-          </Link>
+          {navLinks}
         </nav>
       </aside>
 
-      <div className="flex flex-1 flex-col">
+      {/* Mobile Sidebar Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden animate-in fade-in duration-200" 
+          onClick={() => setIsMobileOpen(false)} 
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col border-r bg-card shadow-lg transition-transform duration-300 md:hidden ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex h-16 items-center justify-between px-6 border-b">
+          <span className="text-xl font-bold text-primary flex items-center gap-2">
+            <CalendarDays className="h-6 w-6" /> Smart Study
+          </span>
+          <button onClick={() => setIsMobileOpen(false)} className="text-muted-foreground hover:text-foreground">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {navLinks}
+        </nav>
+      </aside>
+
+      <div className="flex flex-1 flex-col min-w-0">
         <header className="flex h-16 items-center justify-between border-b bg-card px-6 shadow-sm">
-          <div className="md:hidden text-xl font-bold text-primary">Smart Study</div>
+          <div className="flex items-center gap-3 md:hidden">
+            <button 
+              onClick={() => setIsMobileOpen(true)} 
+              className="text-muted-foreground hover:text-foreground focus:outline-none"
+              aria-label="Open menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <div className="text-xl font-bold text-primary">Smart Study</div>
+          </div>
           <div className="hidden md:block text-sm text-muted-foreground font-medium">
             {user ? `Welcome back, ${user.full_name.split(' ')[0]}` : 'Welcome back'}
           </div>

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, Plus, Clock, BookOpen, CheckCircle2, Circle, MoreVertical, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Clock, BookOpen, CheckCircle2, Circle, Loader2, Trash2 } from 'lucide-react';
 import api from '../../lib/axios';
 import { SubjectWithChapters, Chapter } from '../../types/subject';
 
@@ -22,6 +22,18 @@ export default function SubjectDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const handleDeleteChapter = async (chapterId: number, chapterTitle: string) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete the chapter "${chapterTitle}"?`);
+    if (confirmDelete) {
+      try {
+        await api.delete(`/subjects/chapters/${chapterId}`);
+        fetchSubject();
+      } catch (err) {
+        console.error("Failed to delete chapter:", err);
+      }
+    }
+  };
 
   const {
     register,
@@ -172,8 +184,12 @@ export default function SubjectDetail() {
                     <span className="text-muted-foreground font-normal mr-2">{idx + 1}.</span>
                     {chapter.title}
                   </h3>
-                  <button className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="h-4 w-4" />
+                  <button 
+                    onClick={() => handleDeleteChapter(chapter.id, chapter.title)}
+                    className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-muted/80 opacity-0 group-hover:opacity-100 transition-all"
+                    title="Delete Chapter"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
                 {chapter.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{chapter.description}</p>}

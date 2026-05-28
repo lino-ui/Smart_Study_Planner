@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { BookOpen, Calendar, Clock, Plus, MoreVertical, Loader2 } from 'lucide-react';
+import { BookOpen, Calendar, Clock, Plus, Loader2, Trash2 } from 'lucide-react';
 import api from '../../lib/axios';
 import { Subject } from '../../types/subject';
 
@@ -22,6 +22,20 @@ export default function Subjects() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const handleDeleteSubject = async (e: React.MouseEvent, subjectId: number, subjectName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const confirmDelete = window.confirm(`Are you sure you want to delete the subject "${subjectName}"? This will delete all its chapters too.`);
+    if (confirmDelete) {
+      try {
+        await api.delete(`/subjects/${subjectId}`);
+        fetchSubjects();
+      } catch (err) {
+        console.error("Failed to delete subject:", err);
+      }
+    }
+  };
 
   const {
     register,
@@ -136,8 +150,12 @@ export default function Subjects() {
                         <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">{subject.name}</h3>
                         {subject.branch && <p className="text-sm text-muted-foreground">{subject.branch} {subject.semester ? `• Sem ${subject.semester}` : ''}</p>}
                       </div>
-                      <button className="text-muted-foreground hover:text-foreground">
-                        <MoreVertical className="h-5 w-5" />
+                      <button 
+                        onClick={(e) => handleDeleteSubject(e, subject.id, subject.name)}
+                        className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-muted/80 transition-colors relative z-10"
+                        title="Delete Subject"
+                      >
+                        <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
 
