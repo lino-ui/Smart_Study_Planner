@@ -12,9 +12,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Smart Study Planner"
     API_V1_STR: str = "/api/v1"
     
-    # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
-    # e.g: '["http://localhost", "http://localhost:5173"]'
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:5173"]
+    # BACKEND_CORS_ORIGINS can be a JSON-formatted list or a comma-separated string
+    BACKEND_CORS_ORIGINS: Union[List[str], str] = ["http://localhost:5173"]
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
